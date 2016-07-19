@@ -22,28 +22,30 @@ type Path = String
 
 data RoutingError r
   = HistoryNotSupported r
+  | NotFound Path
   | SerializationError r
 
 instance functorRoutingError :: Functor RoutingError where
   map f (HistoryNotSupported r) = HistoryNotSupported (f r)
   map f (SerializationError r) = SerializationError (f r)
+  map f (NotFound p) = NotFound p
 
-data Action routesType
-  = NotFound Path
-  | Route routesType
-  | Routed routesType
+data RouterAction routesType
+  -- handled by library `update` function
+  = Route routesType
   | UrlChanged Path
+  -- these should be handled by your `update` function
+  | Routed routesType
   | RoutingError (RoutingError routesType)
 
-instance functorActionWrapper :: Functor Action where
-  map _ (NotFound p) = (NotFound p)
+instance functorRouterActionWrapper :: Functor RouterAction where
   map f (Route r) = Route (f r)
   map f (Routed r) = Routed (f r)
   map f (RoutingError e) = RoutingError (map f e)
   map _ (UrlChanged p) = (UrlChanged p)
 
 update :: forall eff route state. (Generic route) =>
-          Update state (Action route) (dom :: DOM | eff)
+          Update state (RouterAction route) (dom :: DOM | eff)
 update (Route r) state =
   case toUrl r of
     Just url ->
@@ -53,30 +55,28 @@ update (UrlChanged p) state =
   onlyEffects
     state
     [ case fromUrl (dropWhile (_ == '/') p) of
-        Just r -> pure (Routed r)
-        Nothing -> pure (NotFound p)
+        Just r -> pure <<< Routed $ r
+        Nothing -> pure <<< RoutingError <<< NotFound $ p
     ]
 update _ state = noEffects state
 
 link :: forall action route. (Generic route) =>
-        ((Action route) -> action) ->
+        ((RouterAction route) -> action) ->
         route ->
         Array (Attribute action) ->
         Array (Html action) ->
-        Html action
-link fromRouterAction route attrs children =
-  a attrs'
-    children
- where
-  attrs' =
-    [ href (fromMaybe "" (toUrl route))
-    , onClick (const (fromRouterAction (Route route)))
-    ]
+        Maybe (Html action)
+link fromRouterAction route attrs children = do
+  r <- toUrl route
+  let attrs' = [ href r
+               , onClick (const (fromRouterAction (Route route)))
+               ] <> attrs
+  return $ a attrs' children
 
-routeSignal' :: forall route eff. Eff (dom :: DOM | eff) (Signal (Action route))
+routeSignal' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
 routeSignal' = sampleUrl >>= (pure <<< (_ ~> UrlChanged))
 
-routeSignal :: forall action route eff. ((Action route) -> action)
+routeSignal :: forall action route eff. ((RouterAction route) -> action)
                -> Eff (dom :: DOM | eff) (Signal action)
 routeSignal fromRouterAction = do
   s <- routeSignal'
