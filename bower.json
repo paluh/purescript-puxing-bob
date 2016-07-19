@@ -1,0 +1,18 @@
+{
+  "name": "purescript-puxing-bob",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-bifunctors": "^1.0.0",
+    "purescript-console": "^1.0.0",
+    "purescript-pux": "5.0.1",
+    "purescript-routing-bob": "https://github.com/paluh/purescript-routing-bob.git#master"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^1.0.0"
+  }
+}

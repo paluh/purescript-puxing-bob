@@ -5,7 +5,7 @@ import Control.Monad.Aff (liftEff')
 import Control.Monad.Eff (Eff)
 import DOM (DOM)
 import Data.Generic (class Generic)
-import Data.Maybe (fromMaybe, Maybe(Nothing, Just))
+import Data.Maybe (Maybe(Nothing, Just))
 import Data.String (dropWhile)
 import Pux (onlyEffects, noEffects, Update)
 import Pux.Html (Html, a)
@@ -71,7 +71,7 @@ link fromRouterAction route attrs children = do
   let attrs' = [ href r
                , onClick (const (fromRouterAction (Route route)))
                ] <> attrs
-  return $ a attrs' children
+  pure $ a attrs' children
 
 routeSignal' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
 routeSignal' = sampleUrl >>= (pure <<< (_ ~> UrlChanged))
