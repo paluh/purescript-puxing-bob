@@ -60,8 +60,9 @@ update router _ state = noEffects state
 sampleUrl' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
 sampleUrl' = Pux.Router.sampleUrl >>= (pure <<< (_ ~> UrlChanged))
 
-sampleUrl :: forall action route eff. ((RouterAction route) -> action)
-               -> Eff (dom :: DOM | eff) (Signal action)
+sampleUrl :: forall action route eff.
+             (RouterAction route -> action) ->
+             Eff (dom :: DOM | eff) (Signal action)
 sampleUrl fromRouterAction = do
   s <- sampleUrl'
   pure (s ~> fromRouterAction)

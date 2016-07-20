@@ -57,9 +57,9 @@ type View route rawAction state =
 link :: forall action route route'. (Generic route') =>
         RoutingContext route route' ->
         route ->
-        Array (Attribute (RouteOrAction route' action)) ->
-        Array (Html route' action) ->
-        Html route' action
+        Array (Attribute (RouteOrAction route action)) ->
+        Array (Html route action) ->
+        Html route action
 link (RoutingContext rc) route attrs children =
   a attrs'
     children
@@ -67,7 +67,7 @@ link (RoutingContext rc) route attrs children =
   route' = rc.addContext route
   attrs' =
     [ href (toUrl rc.router route')
-    , onClick (const <<< RouterAction <<< Route $ route')
+    , onClick (const <<< RouterAction <<< Route $ route)
     ] <> attrs
 
 -- | Creates a signal with current location (`UrlChanged String`) which should
