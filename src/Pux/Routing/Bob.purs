@@ -57,6 +57,15 @@ update router (UrlChanged p) state =
     ]
 update router _ state = noEffects state
 
+routeSignal' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
+routeSignal' = sampleUrl >>= (pure <<< (_ ~> UrlChanged))
+
+routeSignal :: forall action route eff. ((RouterAction route) -> action)
+               -> Eff (dom :: DOM | eff) (Signal action)
+routeSignal fromRouterAction = do
+  s <- routeSignal'
+  pure (s ~> fromRouterAction)
+
 link :: forall action route. (Generic route) =>
         Router route ->
         (RouterAction route -> action) ->
@@ -70,12 +79,3 @@ link router fromRouterAction route attrs children =
                , onClick (const (fromRouterAction <<< Route $ route))
                ] <> attrs
   in a attrs' children
-
-routeSignal' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
-routeSignal' = sampleUrl >>= (pure <<< (_ ~> UrlChanged))
-
-routeSignal :: forall action route eff. ((RouterAction route) -> action)
-               -> Eff (dom :: DOM | eff) (Signal action)
-routeSignal fromRouterAction = do
-  s <- routeSignal'
-  pure (s ~> fromRouterAction)
