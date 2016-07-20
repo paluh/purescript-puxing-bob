@@ -12,7 +12,7 @@ import Pux.Html (Html, a)
 import Pux.Html.Attributes (href)
 import Pux.Html.Elements (Attribute)
 import Pux.Html.Events (onClick)
-import Pux.Router (sampleUrl)
+import Pux.Router as Pux.Router
 import Routing.Bob (toUrl, Router, fromUrl)
 import Signal (Signal, (~>))
 
@@ -57,13 +57,13 @@ update router (UrlChanged p) state =
     ]
 update router _ state = noEffects state
 
-routeSignal' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
-routeSignal' = sampleUrl >>= (pure <<< (_ ~> UrlChanged))
+sampleUrl' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
+sampleUrl' = Pux.Router.sampleUrl >>= (pure <<< (_ ~> UrlChanged))
 
-routeSignal :: forall action route eff. ((RouterAction route) -> action)
+sampleUrl :: forall action route eff. ((RouterAction route) -> action)
                -> Eff (dom :: DOM | eff) (Signal action)
-routeSignal fromRouterAction = do
-  s <- routeSignal'
+sampleUrl fromRouterAction = do
+  s <- sampleUrl'
   pure (s ~> fromRouterAction)
 
 link :: forall action route. (Generic route) =>
