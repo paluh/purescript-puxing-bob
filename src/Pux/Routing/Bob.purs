@@ -13,7 +13,7 @@ import Pux.Html.Attributes (href)
 import Pux.Html.Elements (Attribute)
 import Pux.Html.Events (onClick)
 import Pux.Router (sampleUrl)
-import Routing.Bob (fromUrl, toUrl)
+import Routing.Bob (toUrl, Router, fromUrl)
 import Signal (Signal, (~>))
 
 foreign import push :: forall eff. String -> Eff (dom :: DOM | eff) Unit
@@ -23,11 +23,9 @@ type Path = String
 data RoutingError r
   = HistoryNotSupported r
   | NotFound Path
-  | SerializationError r
 
 instance functorRoutingError :: Functor RoutingError where
   map f (HistoryNotSupported r) = HistoryNotSupported (f r)
-  map f (SerializationError r) = SerializationError (f r)
   map f (NotFound p) = NotFound p
 
 data RouterAction routesType
@@ -45,33 +43,33 @@ instance functorRouterActionWrapper :: Functor RouterAction where
   map _ (UrlChanged p) = (UrlChanged p)
 
 update :: forall eff route state. (Generic route) =>
+          Router route ->
           Update state (RouterAction route) (dom :: DOM | eff)
-update (Route r) state =
-  case toUrl r of
-    Just url ->
-      onlyEffects state [ liftEff' (push url) >>= (const $ pure (Routed r)) ]
-    Nothing -> update (RoutingError (SerializationError r)) state
-update (UrlChanged p) state =
+update router (Route r) state =
+  let url = toUrl router r
+  in onlyEffects state [ liftEff' (push url) >>= (const $ pure (Routed r)) ]
+update router (UrlChanged p) state =
   onlyEffects
     state
-    [ case fromUrl (dropWhile (_ == '/') p) of
+    [ case fromUrl router (dropWhile (_ == '/') p) of
         Just r -> pure <<< Routed $ r
         Nothing -> pure <<< RoutingError <<< NotFound $ p
     ]
-update _ state = noEffects state
+update router _ state = noEffects state
 
 link :: forall action route. (Generic route) =>
-        ((RouterAction route) -> action) ->
+        Router route ->
+        (RouterAction route -> action) ->
         route ->
         Array (Attribute action) ->
         Array (Html action) ->
-        Maybe (Html action)
-link fromRouterAction route attrs children = do
-  r <- toUrl route
-  let attrs' = [ href r
-               , onClick (const (fromRouterAction (Route route)))
+        Html action
+link router fromRouterAction route attrs children =
+  let url = toUrl router route
+      attrs' = [ href url
+               , onClick (const (fromRouterAction <<< Route $ route))
                ] <> attrs
-  pure $ a attrs' children
+  in a attrs' children
 
 routeSignal' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RouterAction route))
 routeSignal' = sampleUrl >>= (pure <<< (_ ~> UrlChanged))
