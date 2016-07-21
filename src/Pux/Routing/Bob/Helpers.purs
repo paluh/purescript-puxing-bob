@@ -52,7 +52,7 @@ type View route rawAction state =
   forall route'. (Generic route') =>
   RoutingContext route route' ->
   state ->
-  Html route' rawAction
+  Html route rawAction
 
 link :: forall action route route'. (Generic route') =>
         RoutingContext route route' ->
