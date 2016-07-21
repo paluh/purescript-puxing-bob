@@ -10,20 +10,22 @@ This library is still proof of concept and is in testing phase...
 
 This module provides simple action type:
 
-    ```purescript
-    -- Pux.Routing.Bob.purs
+```purescript
 
-    type Path = String
+-- Pux.Routing.Bob.purs
 
-    data RouterAction routesType
-      -- these actions should be handled by your update
-      = Routed routesType
-      | RoutingError (RoutingError routesType)
+type Path = String
 
-      -- these actions should be passed to Pux.Routing.Bob.update
-      | Route routesType
-      | UrlChanged Path
-    ```
+data RouterAction routesType
+  -- these actions should be handled by your update
+  = Routed routesType
+  | RoutingError (RoutingError routesType)
+
+  -- these actions should be passed to Pux.Routing.Bob.update
+  | Route routesType
+  | UrlChanged Path
+
+```
 
 It contains also `update` function which handles `Route routesType`, which should be send by you and `UrlChanged Path`, which is received through custom signal from the browser when url changes. In response to these actions this component creates `Routed r` or `RoutingError ...` actions which should be handled by your `update` function.
 
@@ -34,13 +36,15 @@ This module provides also signal constructor. This signal will handle direct url
 Bidirectional routing allows you to easily encode and decode urls to and from types. This library is based on __routing-bob__ and generates these parsers and serializers for free from data types which are instances of `Gneric` class (which can be derived autmagically in Pux :-)).
 Here are the types of main routing functions:
 
-    ```purescript
-    router :: (Generic a) => Proxy a -> Maybe (Router a)
+```purescript
 
-    toUrl :: Router a -> a -> String
+router :: (Generic a) => Proxy a -> Maybe (Router a)
 
-    fromUrl :: (Generic a) => String -> Maybe String
-    ```
+toUrl :: Router a -> a -> String
+
+fromUrl :: (Generic a) => String -> Maybe String
+
+```
 
 There is still one small caveat, as __routing-bob__ is in early developement phase, router construction can fail for some types - __bob__ handles sum types, nested sum types, `Int`s and `String`s now, but I'm going to extend this set soon.
 
@@ -51,10 +55,14 @@ This manual is still work in progress as API fluctuates a lot ;-)
 
 Assume that we have component with three tabs (for example: `Profile`, `Inbox`, `Settings`) and we want to include currently active tab in url, so we need to define type which can encode this:
 
-    import Data.Generic (class Generic)
+```purescript
 
-    data Routes = Profile | Inbox | Settings
-    derive instance genericRoutes :: Generic Routes
+import Data.Generic (class Generic)
+
+data Routes = Profile | Inbox | Settings
+derive instance genericRoutes :: Generic Routes
+
+```
 
 We have to preserve this information in component `State` as we want to use it in `view` function:
 
