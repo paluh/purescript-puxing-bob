@@ -66,21 +66,29 @@ derive instance genericRoutes :: Generic Routes
 
 We have to preserve this information in component `State` as we want to use it in `view` function:
 
-    type State =
-        { activeTab :: Routes
-        , router :: Router Routes
-        , nickName :: String
-        ...
-        }
+```purescript
+
+type State =
+    { activeTab :: Routes
+    , router :: Router Routes
+    , nickName :: String
+    ...
+    }
+
+```
 
 Of course you have to include routing related actions also in your `Action` type:
 
-    import Pux.Routing.Bob as Pux.Routing.Bob
+```purescript
 
-    data Action
-      = RouterAction Pux.Routing.Bob.RouterAction
-      | SettingsFormAction SettingFormActions
-      | ...
+import Pux.Routing.Bob as Pux.Routing.Bob
+
+data Action
+  = RouterAction Pux.Routing.Bob.RouterAction
+  | SettingsFormAction SettingFormActions
+  | ...
+
+```
 
 You have to prepare router and pass it somehow to view and to this component update function:
 
@@ -88,31 +96,41 @@ You have to prepare router and pass it somehow to view and to this component upd
 
 Now we can use routing in your view function:
 
-    import Pux.Html (Html, ul, li)
-    import Pux.Routing.Bob (link)
-    import Pux.Routing.Bob as Pux.Routing.Bob
+```purescript
 
-    view :: (Router Routes) -> Html Action
-    view router state =
-      ul
-        []
-        [ li [] [link' Profile [] [ text "profile" ]
-        , li [] [link' Inbox [] [ text "inbox" ]
-        , li [] [link' Settings [] [ text "settings" ]
-        ]
+import Pux.Html (Html, ul, li)
+import Pux.Routing.Bob (link)
+import Pux.Routing.Bob as Pux.Routing.Bob
 
-     where
-      link' = link router RouterAction
-      fromRouterAction = RouterAction <<< Pux.Routing.Bob.RouterAction
+view :: (Router Routes) -> Html Action
+view router state =
+  ul
+    []
+    [ li [] [link' Profile [] [ text "profile" ]
+    , li [] [link' Inbox [] [ text "inbox" ]
+    , li [] [link' Settings [] [ text "settings" ]
+    ]
+
+ where
+  link' = link router RouterAction
+  fromRouterAction = RouterAction <<< Pux.Routing.Bob.RouterAction
+
+```
 
 The last step is to handle successful routing action in your update function:
 
-    ```purescript
-    --handle successful location change
-    update router (RouterAction (Routed r)) = ...
-    -- handle unsuccessful routing action
-    update router (RouterAction (RoutingError e)) = ...
-    -- pass other routing related actions to the router
-    update router (RouterAction a) = Pux.Routing.Bob.update router a
-    ```
+```purescript
+
+import Pux.Routing.Bob as Pux.Routing.Bob
+
+--handle successful location change
+update router (RouterAction (Routed r)) = ...
+
+-- handle unsuccessful routing action
+update router (RouterAction (RoutingError e)) = ...
+
+-- pass other routing related actions to the router
+update router (RouterAction a) = Pux.Routing.Bob.update router a
+
+```
 
