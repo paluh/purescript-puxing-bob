@@ -59,8 +59,8 @@ Assume that we have component with three tabs (for example: `Profile`, `Inbox`, 
 
 import Data.Generic (class Generic)
 
-data Routes = Profile | Inbox | Settings
-derive instance genericRoutes :: Generic Routes
+data Route = Profile | Inbox | Settings
+derive instance genericRoute :: Generic Route
 
 ```
 
@@ -69,8 +69,8 @@ We have to preserve this information in component `State` as we want to use it i
 ```purescript
 
 type State =
-    { activeTab :: Routes
-    , router :: Router Routes
+    { activeTab :: Route
+    , router :: Router Route
     , nickName :: String
     ...
     }
@@ -92,7 +92,7 @@ data Action
 
 You have to prepare router and pass it somehow to view and to this component update function:
 
-    maybeRouter = router (Proxy :: Proxy Routes)
+    maybeRouter = router (Proxy :: Proxy Route)
 
 Now we can use routing in your view function:
 
@@ -102,7 +102,7 @@ import Pux.Html (Html, ul, li)
 import Pux.Routing.Bob (link)
 import Pux.Routing.Bob as Pux.Routing.Bob
 
-view :: (Router Routes) -> Html Action
+view :: (Router Route) -> Html Action
 view router state =
   ul
     []
