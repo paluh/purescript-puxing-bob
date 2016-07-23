@@ -38,7 +38,7 @@ data RouterAction routesType
   = Routed routesType
   | RoutingError (RoutingError routesType)
 
-  -- these actions should be passed to Pux.Routing.Bob.update
+  -- these actions should be passed to Pux.Routing.Bob.Component.update
   | Route routesType
   | UrlChanged Path
 
@@ -79,10 +79,10 @@ Of course you have to include routing related actions also in your `Action` type
 
 ```purescript
 
-import Pux.Routing.Bob as Pux.Routing.Bob
+import Pux.Routing.Bob.Component as Pux.Routing.Bob.Component
 
 data Action
-  = RouterAction Pux.Routing.Bob.RouterAction
+  = RouterAction Pux.Routing.Bob.Component.RouterAction
   | SettingsFormAction SettingFormActions
   | ...
 
@@ -92,7 +92,7 @@ data Action
 You have to prepare router and pass it somehow to view and to this component update function (it such a simple scenario you can preserve it in a closure).
 You also have to include signal (which will monitor direct url changes) into application configuration `inputs` table:
 
-import Routing.Bob (router)
+import Routing.Bob.Component (router)
 
 main = do
   ...
@@ -114,8 +114,7 @@ Now we can use routing in your view function:
 ```purescript
 
 import Pux.Html (Html, ul, li)
-import Pux.Routing.Bob (link)
-import Pux.Routing.Bob as Pux.Routing.Bob
+import Pux.Routing.Bob.Component (link)
 
 view :: (Router Route) -> Html Action
 view router state =
@@ -144,7 +143,7 @@ The last step is to handle routing action (responses from component) in your upd
 
 ```purescript
 
-import Pux.Routing.Bob as Pux.Routing.Bob
+import Pux.Routing.Bob.Component as Pux.Routing.Bob.Component
 
 --handle successful location change
 update router (RouterAction (Routed r)) = ...
