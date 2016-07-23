@@ -131,7 +131,7 @@ view router state =
 
 ```
 
-The last step is to handle routing action (responses from componnt) in your update function:
+The last step is to handle routing action (responses from component) in your update function:
 
 ```purescript
 
