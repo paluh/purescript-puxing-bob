@@ -8,7 +8,7 @@ This library is still proof of concept and is in testing phase...
 
 ## Bidirectional routing
 
-Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on __routing-bob__ and generates these parsers and serializers for free from data types which are instances of `Generic` class (which can be derived autmagically in Pux :-)).
+Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on __purescript-routing-bob__ and generates these parsers and serializers for free from data types which are instances of `class Generic` (which can be derived autmagically in Pux :-)).
 Here are the types of main routing functions:
 
 ```purescript
@@ -23,7 +23,7 @@ fromUrl :: (Generic a) => String -> Maybe String
 
 ## Component.purs
 
-This module implements simple component which can be embeded in your application and it will handle routing for you. This is not really composable approach, but is simple.
+This module implements simple component which can be embeded in your application and it will handle routing for you. This is not really composable approach, but it is simple.
 
 ### Overview
 
@@ -46,9 +46,11 @@ data RouterAction routesType
 
 ```
 
-It contains also `update` function which handles `Route routesType` and `UrlChanged Path` actions. `Route routes` action should be created by you to request url change. `UrlChanged Path` is received through custom signal when url is modified (but not by application). In response to these actions this component creates `Routed r` or `RoutingError ...` actions which should be handled by your `update` function.
+It contains also `update` function which handles `Route routesType` and `UrlChanged Path` actions. `Route routesType` action should be created by you to request url change. `UrlChanged Path` is received through custom signal when url is modified (but not by application). In response to these actions this component creates `Routed r` or `RoutingError ...` actions which should be handled by your `update` function.
 
-This module provides also signal constructor. This signal will handle direct url changes (encoded internally as `UrlChanged path` value) and through update it will generate appropriate response actions which should be handled by your `update`.
+This module provides also signal constructor. This signal will handle direct url changes (encoded internally as `UrlChanged path` value) and through `update` it will generate appropriate response actions which should be handled by your `update`.
+
+So the only think you should care is to create proper `Route routesType` actions and handle `Routed routesType` and `RoutingError ...` actions.
 
 ### Usage
 
@@ -121,13 +123,22 @@ view :: (Router Route) -> Html Action
 view router state =
   ul
     []
-    [ li [] [link' Profile [] [ text "profile" ]
-    , li [] [link' Inbox [] [ text "inbox" ]
-    , li [] [link' Settings [] [ text "settings" ]
-    ]
+    map markActive
+      [ menuItem Profile "profile"
+      , menuItem Inbox "inbox"
+      , menuItem Settings "settings"
+      ]
 
  where
-  link' = link router RouterAction
+  menuItem route label =
+    li
+      if state.activeTab == route
+        then [className "active"]
+        else []
+      [ link router RouterAction route
+        []
+        [ text label ]
+      ]
 
 ```
 
