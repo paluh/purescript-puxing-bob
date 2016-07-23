@@ -124,11 +124,10 @@ view :: (Router Route) -> Html Action
 view router state =
   ul
     []
-    map markActive
-      [ menuItem Profile "profile"
-      , menuItem Inbox "inbox"
-      , menuItem Settings "settings"
-      ]
+    [ menuItem Profile "profile"
+    , menuItem Inbox "inbox"
+    , menuItem Settings "settings"
+    ]
 
  where
   menuItem route label =
