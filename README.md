@@ -1,6 +1,6 @@
 # purescript-puxing-bob
 
-Bidiractional routing for Pux based on boomerang and generics. I'm exploring design space to find best way to incorporate routing into pux components...
+Bidiractional routing for Pux based on boomerangs and generics. I'm exploring design space to find best way to incorporate routing into pux components...
 
 ## Caution!
 
@@ -21,7 +21,7 @@ fromUrl :: (Generic a) => String -> Maybe String
 
 ```
 
-## Component.purs
+## Pux.Routing.Bob.Component
 
 This module implements simple component which can be embeded in your application and it will handle routing for you. This is not really composable approach, but it is simple.
 
@@ -30,8 +30,6 @@ This module implements simple component which can be embeded in your application
 This module provides simple action type:
 
 ```purescript
-
--- Pux.Routing.Bob.purs
 
 type Path = String
 
