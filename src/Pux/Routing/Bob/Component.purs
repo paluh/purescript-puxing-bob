@@ -1,4 +1,4 @@
-module Pux.Routing.Bob where
+module Pux.Routing.Bob.Component where
 
 import Prelude
 import Control.Monad.Aff (liftEff')

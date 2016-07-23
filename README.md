@@ -1,12 +1,31 @@
 # purescript-puxing-bob
 
-Bidiractional routing for Pux based on boomerang and generics. Unfortunatelly you have to still make a lot of manual plumbing to make it composable...
+Bidiractional routing for Pux based on boomerang and generics. I'm exploring design space to find best way to incorporate routing into pux components...
 
 ## Caution!
 
 This library is still proof of concept and is in testing phase...
 
-## Overview
+## Bidirectional routing
+
+Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on __routing-bob__ and generates these parsers and serializers for free from data types which are instances of `Generic` class (which can be derived autmagically in Pux :-)).
+Here are the types of main routing functions:
+
+```purescript
+
+router :: (Generic a) => Proxy a -> Maybe (Router a)
+
+toUrl :: Router a -> a -> String
+
+fromUrl :: (Generic a) => String -> Maybe String
+
+```
+
+## Component.purs
+
+This module implements simple component which can be embeded in your application and it will handle routing for you. This is not really composable approach, but is simple.
+
+### Overview
 
 This module provides simple action type:
 
@@ -27,33 +46,13 @@ data RouterAction routesType
 
 ```
 
-It contains also `update` function which handles `Route routesType`, which should be send by you and `UrlChanged Path`, which is received through custom signal from the browser when url changes. In response to these actions this component creates `Routed r` or `RoutingError ...` actions which should be handled by your `update` function.
+It contains also `update` function which handles `Route routesType` and `UrlChanged Path` actions. `Route routes` action should be created by you to request url change. `UrlChanged Path` is received through custom signal when url is modified (but not by application). In response to these actions this component creates `Routed r` or `RoutingError ...` actions which should be handled by your `update` function.
 
 This module provides also signal constructor. This signal will handle direct url changes (encoded internally as `UrlChanged path` value) and through update it will generate appropriate response actions which should be handled by your `update`.
 
-## Bidirectional routing
+### Usage
 
-Bidirectional routing allows you to easily encode and decode urls to and from types. This library is based on __routing-bob__ and generates these parsers and serializers for free from data types which are instances of `Gneric` class (which can be derived autmagically in Pux :-)).
-Here are the types of main routing functions:
-
-```purescript
-
-router :: (Generic a) => Proxy a -> Maybe (Router a)
-
-toUrl :: Router a -> a -> String
-
-fromUrl :: (Generic a) => String -> Maybe String
-
-```
-
-There is still one small caveat, as __routing-bob__ is in early developement phase, router construction can fail for some types - __bob__ handles sum types, nested sum types, `Int`s and `String`s now, but I'm going to extend this set soon.
-
-
-## Usage
-
-This manual is still work in progress as API fluctuates a lot ;-)
-
-Assume that we have component with three tabs (for example: `Profile`, `Inbox`, `Settings`) and we want to include currently active tab in url, so we need to define type which can encode this:
+Assume that we have application with three tabs (for example: `Profile`, `Inbox`, `Settings`) and we want to include currently active tab in url, so we need to define type which can encode this:
 
 ```purescript
 
@@ -70,7 +69,6 @@ We have to preserve this information in component `State` as we want to use it i
 
 type State =
     { activeTab :: Route
-    , router :: Router Route
     , nickName :: String
     ...
     }
@@ -90,9 +88,26 @@ data Action
 
 ```
 
-You have to prepare router and pass it somehow to view and to this component update function:
 
-    maybeRouter = router (Proxy :: Proxy Route)
+You have to prepare router and pass it somehow to view and to this component update function (it such a simple scenario you can preserve it in a closure).
+You also have to include signal (which will monitor direct url changes) into application configuration `inputs` table:
+
+import Routing.Bob (router)
+
+main = do
+  ...
+
+  let maybeRouter = router (Proxy :: Proxy Route)
+  case maybeRouter of
+    Just r -> do
+      -- Setup routing signal and add it to `inputs` in your Pux application config):
+      su <- sampleUrl RouterAction
+      config = { inputs: [su]
+               , update: update router
+               , view: view router
+               , state: ...
+               }
+    Nothing -> -- Maybe it's easier to just use... unsafePartial ;-)
 
 Now we can use routing in your view function:
 
@@ -113,11 +128,10 @@ view router state =
 
  where
   link' = link router RouterAction
-  fromRouterAction = RouterAction <<< Pux.Routing.Bob.RouterAction
 
 ```
 
-The last step is to handle successful routing action in your update function:
+The last step is to handle routing action (responses from componnt) in your update function:
 
 ```purescript
 
@@ -130,7 +144,8 @@ update router (RouterAction (Routed r)) = ...
 update router (RouterAction (RoutingError e)) = ...
 
 -- pass other routing related actions to the router
-update router (RouterAction a) = Pux.Routing.Bob.update router a
+update router (RouterAction a) = Pux.Routing.Bob.Component.update router a
 
 ```
+
 
