@@ -92,6 +92,8 @@ data Action
 You have to prepare router and pass it somehow to view and to this component update function (it such a simple scenario you can preserve it in a closure).
 You also have to include signal (which will monitor direct url changes) into application configuration `inputs` table:
 
+```purescript
+
 import Routing.Bob.Component (router)
 
 main = do
@@ -108,6 +110,8 @@ main = do
                , state: ...
                }
     Nothing -> -- Maybe it's easier to just use... unsafePartial ;-)
+
+```
 
 Now we can use routing in your view function:
 
