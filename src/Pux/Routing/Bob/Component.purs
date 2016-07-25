@@ -13,10 +13,9 @@ import Pux.Html.Attributes (href)
 import Pux.Html.Elements (Attribute)
 import Pux.Html.Events (onClick)
 import Pux.Router as Pux.Router
+import Pux.Routing.Bob (push)
 import Routing.Bob (toUrl, Router, fromUrl)
 import Signal (Signal, (~>))
-
-foreign import push :: forall eff. String -> Eff (dom :: DOM | eff) Unit
 
 type Path = String
 
