@@ -82,7 +82,7 @@ Of course you have to include routing related actions also in your `Action` type
 import Pux.Routing.Bob.Component as Pux.Routing.Bob.Component
 
 data Action
-  = RouterAction Pux.Routing.Bob.Component.RouterAction
+  = RoutingAction (Pux.Routing.Bob.Component.RoutingAction Route)
   | SettingsFormAction SettingFormActions
   | ...
 
@@ -102,8 +102,8 @@ main = do
   let maybeRouter = router (Proxy :: Proxy Route)
   case maybeRouter of
     Just r -> do
-      -- Setup routing signal and add it to `inputs` in your Pux application config):
-      su <- sampleUrl RouterAction
+      -- Setup routing signal and add it to `inputs` in your Pux application config:
+      su <- sampleUrl RoutingAction
       config = { inputs: [su]
                , update: update router
                , view: view router
@@ -135,7 +135,7 @@ view router state =
       if state.activeTab == route
         then [className "active"]
         else []
-      [ link router RouterAction route
+      [ link router RoutingAction route
         []
         [ text label ]
       ]
@@ -149,13 +149,13 @@ The last step is to handle routing action (responses from component) in your upd
 import Pux.Routing.Bob.Component as Pux.Routing.Bob.Component
 
 --handle successful location change
-update router (RouterAction (Routed r)) = ...
+update router (RoutingAction (Routed r)) = ...
 
 -- handle unsuccessful routing action
-update router (RouterAction (RoutingError e)) = ...
+update router (RoutingAction (RoutingError e)) = ...
 
 -- pass other routing related actions to the router
-update router (RouterAction a) = Pux.Routing.Bob.Component.update router a
+update router (RoutingAction a) = Pux.Routing.Bob.Component.update router a
 
 ```
 
