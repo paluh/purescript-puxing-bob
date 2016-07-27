@@ -1,0 +1,16 @@
+{
+  "name": "single-component-routing",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-console": "^1.0.0",
+    "purescript-puxing-bob": "https://github.com/paluh/purescript-puxing-bob.git#master"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^1.0.0"
+  }
+}
