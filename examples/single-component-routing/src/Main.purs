@@ -8,7 +8,7 @@ import DOM (DOM)
 import Data.Generic (gEq, class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
 import Pux (renderToDOM, start, noEffects, Update)
-import Pux.Html (div, a, text, li, ul, Html)
+import Pux.Html (br, div, a, text, li, ul, Html)
 import Pux.Html.Attributes (href, className)
 import Pux.Html.Events (onClick)
 import Pux.Routing.Bob.Component (link, RoutingAction(Routed, RoutingError), sampleUrl)
@@ -70,7 +70,7 @@ view router state =
       ]
   tabBody action counter label =
     a [ href "#" , onClick $ const action]
-      [ text (label <> " action"), text <<< show $ counter ]
+      [ text (label <> " action"), br [] [], text <<< show $ counter ]
 
 update :: forall eff. (Router Route) -> Update State Action (dom :: DOM | eff)
 update _ ProfileAction state =
