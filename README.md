@@ -9,7 +9,7 @@ This library is still proof of concept and is in testing phase...
 ## Bidirectional routing
 
 Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on __purescript-routing-bob__. Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
-Here is the base routing API:
+Here is routing API which is base for this library:
 
 ```purescript
 
@@ -23,7 +23,7 @@ fromUrl :: (Generic a) => String -> Maybe String
 
 ## Pux.Routing.Bob
 
-This module implements simple approach to routing. This component can be embeded in your application and it will handle routing for you. This architecture is not really composable, but it is simple and it is base for extended more composable implementation, so let's start with it.
+This module implements simple approach to routing. This component can be embeded in your application and it will handle routing for you. This architecture is not really composable, but it is simple and it is base for extended, more composable implementation, so let's start with it.
 
 ### Overview
 
@@ -52,7 +52,7 @@ So the only think you should care is to create proper `Route routesType` actions
 
 ### Usage
 
-You can find full and working code of example in examples/single-component-routing
+You can find full and working code of this example in `examples/single-component-routing`.
 
 Assume that we have application with three tabs (for example: `Profile`, `Inbox`, `Settings`) and we want to include currently active tab in url, so we need to define type which can encode this:
 
@@ -92,8 +92,7 @@ data Action
 ```
 
 
-You have to prepare router and pass it somehow to view and to this component update function (it such a simple scenario you can preserve it in a closure).
-You also have to include signal (which will monitor direct url changes) into application configuration `inputs` table:
+You have to prepare router and pass it somehow to `view` and to this component `update` function (it such a simple scenario you can preserve it in a closure).  You also have to include signal (which will monitor direct url changes) into application configuration `inputs` list:
 
 ```purescript
 
@@ -116,7 +115,7 @@ main = do
 
 ```
 
-Now we can use routing in your view function:
+Now we can use routing in `view` function:
 
 ```purescript
 
@@ -168,7 +167,7 @@ This module implements basic approach to composable component implementation. It
 
 ### Action type
 
-There is `Action` type provided which is based on `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding type and one for normal action. It seems that regular actions composition is done through sum of subcomponents actions, but composition of routes is just a product. `Action` type, thanks to clear separation between these two types, allows to separate these composition.
+There is `Action` type provided which is based on `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding type and one for "normal" action. It seems that regular actions composition is done through sum of subcomponents actions, but composition of routes is a product of subroutes. `Action` type, thanks to clear separation between these two types, facilitates these two strategies of composition.
 Mapping over `Action` is still possible thanks to `Bifunctor` instance.
 
 ```purescript
@@ -183,7 +182,7 @@ data Action route action
 
 ### View type
 
-I think that the ugliest part of this `API` is `View` type. It is a bit complicated and completly removes possiblity to work with `Html action` through it's `Functor` instance.
+I think that the ugliest part of this `API` is the `View` type. It is a bit complicated and completly removes possiblity to work with `Html action` through it's `Functor` instance.
 
 
 ```purescript
@@ -199,9 +198,9 @@ type View state route action =
 
 Here is why we need such a complicated `View` type:
 
-* we want to perform `toUrl router route` (for example when generating `href` values)
+* we want to perform `toUrl router route` (for example when generating `href` values),
 
-* this value has to somehow capture external (parent component) routing context, because final url should contain other components routes
+* this value has to somehow capture external (parent component) routing context, because final url should contain other components routes,
 
 * I don't think we can pospone this evaluation in any other way than through callback, but maybe there is some nice abstraction...
 
