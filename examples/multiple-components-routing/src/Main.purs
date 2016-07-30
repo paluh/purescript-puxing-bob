@@ -187,21 +187,18 @@ appUpdate _ _ aRouter (RoutingAction a) state =
 appView :: Router AppRoute -> AppState -> Html AppAction
 appView router state =
   div []
-    [ mainWindowView router mapMainWindowAction state.mainWindowState
+    [ mainWindowView
+        router
+        (bimap (\r -> AppRoute r state.sideBarState) MainWindowRawAction)
+        state.mainWindowState
     , sideBarView router mapSideBarAction state.sideBarState
     ]
  where
-  mapMainWindowRoute mainWindowRoute = AppRoute mainWindowRoute state.sideBarState
-  mapMainWindowAction :: forall b. (Bifunctor b) =>
-                         b MainWindowRoute MainWindowRawAction ->
-                         b AppRoute AppRawAction
-  mapMainWindowAction = bimap (\r -> AppRoute r state.sideBarState) MainWindowRawAction
-
-  mapSideBarRoute sideBarRoute = AppRoute state.mainWindowState.activeTab sideBarRoute
+  -- Helper with type signature, which is necessary in this case
   mapSideBarAction :: forall b. (Bifunctor b) =>
                       b SideBarRoute SideBarRawAction ->
                       b AppRoute AppRawAction
-  mapSideBarAction = bimap mapSideBarRoute SideBarRawAction
+  mapSideBarAction = bimap (\r -> AppRoute state.mainWindowState.activeTab r) SideBarRawAction
 
 main :: Eff ( dom :: DOM , channel :: CHANNEL , err :: EXCEPTION ) Unit
 main = do
