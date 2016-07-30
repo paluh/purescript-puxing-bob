@@ -8,7 +8,7 @@ This library is still proof of concept and is in testing phase...
 
 ## Bidirectional routing
 
-Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on __purescript-routing-bob__. Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
+Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on [purescript-routing-bob](https://github.com/paluh/routing-bob). Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
 Here is routing API which is base for this library:
 
 ```purescript
@@ -52,7 +52,7 @@ So the only think you should care is to create proper `Route routesType` actions
 
 ### Usage
 
-You can find full and working code of this example in `examples/single-component-routing`.
+You can find full and working code of this example in [examples/single-component-routing](https://github.com/paluh/purescript-puxing-bob/tree/master/examples/single-component-routing).
 
 Assume that we have application with three tabs (for example: `Profile`, `Inbox`, `Settings`) and we want to include currently active tab in url, so we need to define type which can encode this:
 
@@ -163,7 +163,7 @@ update router (RoutingAction a) = Pux.Routing.Bob.update router a
 
 ## Pux.Routing.Bob.Component
 
-This module implements basic approach to composable component implementation. It is still just proof of concept.
+This module implements basic approach to composable component implementation. It is still just proof of concept. You can find full and working code of routing composition here: [examples/multiple-components-routing](https://github.com/paluh/purescript-puxing-bob/tree/master/examples/multiple-components-routing).
 
 ### Action type
 
