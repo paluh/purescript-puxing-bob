@@ -8,7 +8,7 @@ This library is still proof of concept and is in testing phase...
 
 ## Bidirectional routing
 
-Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on [purescript-routing-bob](https://github.com/paluh/routing-bob). Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
+Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on [purescript-routing-bob](https://github.com/paluh/purescript-routing-bob). Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
 Here is routing API which is base for this library:
 
 ```purescript
