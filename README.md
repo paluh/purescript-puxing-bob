@@ -48,7 +48,7 @@ It contains also `update` function which handles `Route routesType` and `UrlChan
 
 This module provides also signal constructor. This signal will handle direct url changes (encoded internally as `UrlChanged path` value) and through `update` it will generate appropriate response actions which should be handled by your `update`.
 
-So the only think you should care is to create proper `Route routesType` actions and handle `Routed routesType` and `RoutingError ...` actions.
+So the only thing you should care about, is to create proper `Route routesType` actions and handle `Routed routesType` and `RoutingError ...` in your `update`.
 
 ### Usage
 
