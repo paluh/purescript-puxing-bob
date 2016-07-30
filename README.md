@@ -21,9 +21,9 @@ fromUrl :: (Generic a) => String -> Maybe String
 
 ```
 
-## Pux.Routing.Bob.Component
+## Pux.Routing.Bob
 
-This module implements simple component which can be embeded in your application and it will handle routing for you. This is not really composable approach, but it is simple.
+This module implements simple approach for routing, which can be embeded in your application and it will handle routing for you. This is not really composable approach, but it is simple.
 
 ### Overview
 
@@ -38,7 +38,7 @@ data RouterAction routesType
   = Routed routesType
   | RoutingError (RoutingError routesType)
 
-  -- these actions should be passed to Pux.Routing.Bob.Component.update
+  -- these actions should be passed to Pux.Routing.Bob.update
   | Route routesType
   | UrlChanged Path
 
@@ -52,13 +52,18 @@ So the only think you should care is to create proper `Route routesType` actions
 
 ### Usage
 
+You can find full and working code of example in examples/single-component-routing
+
 Assume that we have application with three tabs (for example: `Profile`, `Inbox`, `Settings`) and we want to include currently active tab in url, so we need to define type which can encode this:
 
 ```purescript
 
 import Data.Generic (class Generic)
 
-data Route = Profile | Inbox | Settings
+data Route
+  = Profile
+  | Inbox
+  | Settings
 derive instance genericRoute :: Generic Route
 
 ```
@@ -68,10 +73,9 @@ We have to preserve this information in component `State` as we want to use it i
 ```purescript
 
 type State =
-    { activeTab :: Route
-    , nickName :: String
-    ...
-    }
+  { activeTab :: Route
+  ...
+  }
 
 ```
 
@@ -79,11 +83,10 @@ Of course you have to include routing related actions also in your `Action` type
 
 ```purescript
 
-import Pux.Routing.Bob.Component as Pux.Routing.Bob.Component
+import Pux.Routing.Bob as Pux.Routing.Bob
 
 data Action
-  = RoutingAction (Pux.Routing.Bob.Component.RoutingAction Route)
-  | SettingsFormAction SettingFormActions
+  = RoutingAction (Pux.Routing.Bob.RoutingAction Route)
   | ...
 
 ```
@@ -94,20 +97,20 @@ You also have to include signal (which will monitor direct url changes) into app
 
 ```purescript
 
-import Routing.Bob.Component (router)
+import Routing.Bob (router)
 
 main = do
   ...
 
   let maybeRouter = router (Proxy :: Proxy Route)
+  su <- sampleUrl RoutingAction
   case maybeRouter of
     Just r -> do
       -- Setup routing signal and add it to `inputs` in your Pux application config:
-      su <- sampleUrl RoutingAction
       config = { inputs: [su]
                , update: update router
                , view: view router
-               , state: ...
+               , initialState: ...
                }
     Nothing -> -- Maybe it's easier to just use... unsafePartial ;-)
 
@@ -118,7 +121,7 @@ Now we can use routing in your view function:
 ```purescript
 
 import Pux.Html (Html, ul, li)
-import Pux.Routing.Bob.Component (link)
+import Pux.Routing.Bob (link)
 
 view :: (Router Route) -> Html Action
 view router state =
@@ -146,7 +149,7 @@ The last step is to handle routing action (responses from component) in your upd
 
 ```purescript
 
-import Pux.Routing.Bob.Component as Pux.Routing.Bob.Component
+import Pux.Routing.Bob as Pux.Routing.Bob
 
 --handle successful location change
 update router (RoutingAction (Routed r)) = ...
@@ -155,8 +158,6 @@ update router (RoutingAction (Routed r)) = ...
 update router (RoutingAction (RoutingError e)) = ...
 
 -- pass other routing related actions to the router
-update router (RoutingAction a) = Pux.Routing.Bob.Component.update router a
+update router (RoutingAction a) = Pux.Routing.Bob.update router a
 
 ```
-
-
