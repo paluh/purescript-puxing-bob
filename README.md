@@ -23,7 +23,7 @@ fromUrl :: (Generic a) => String -> Maybe String
 
 ## Pux.Routing.Bob
 
-This module implements simple approach to routing. This component can be embeded in your application and it will handle routing for you. This architecture is not really composable, but it is simple and it is base for extended, more composable implementation, so let's start with it.
+This module implements simple approach to routing. This component can be embeded in your application and it will handle routing for you. This architecture is not really composable, but it is simple and it is base for an extended, more composable implementation, so let's start with it.
 
 ### Overview
 
