@@ -8,8 +8,8 @@ This library is still proof of concept and is in testing phase...
 
 ## Bidirectional routing
 
-Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on __purescript-routing-bob__ and generates these parsers and serializers for free from data types which are instances of `class Generic` (which can be derived autmagically in Pux :-)).
-Here are the types of main routing functions:
+Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on __purescript-routing-bob__. Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
+Here is the base routing API:
 
 ```purescript
 
@@ -23,7 +23,7 @@ fromUrl :: (Generic a) => String -> Maybe String
 
 ## Pux.Routing.Bob
 
-This module implements simple approach for routing, which can be embeded in your application and it will handle routing for you. This is not really composable approach, but it is simple.
+This module implements simple approach to routing. This component can be embeded in your application and it will handle routing for you. This architecture is not really composable, but it is simple and it is base for extended more composable implementation, so let's start with it.
 
 ### Overview
 
