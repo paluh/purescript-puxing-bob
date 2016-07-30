@@ -166,9 +166,7 @@ update router (RoutingAction a) = Pux.Routing.Bob.update router a
 
 This module implements basic approach to composable component implementation. It is still just proof of concept.
 
-### Overview
-
-#### Action type
+### Action type
 
 There is `Action` type provided which is based on `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding type and one for normal action. It seems that regular actions composition is done through sum of subcomponents actions, but composition of routes is just a product. `Action` type, thanks to clear separation between these two types, allows to separate these composition.
 Mapping over `Action` is still possible thanks to `Bifunctor` instance.
@@ -183,7 +181,9 @@ data Action route action
 
 ```
 
-I think that the worst part of this `API` is `View` type. It is a bit complicated and completly removes possiblity to work with `Html action` through it's `Functor` instance.
+### View type
+
+I think that the ugliest part of this `API` is `View` type. It is a bit complicated and completly removes possiblity to work with `Html action` through it's `Functor` instance.
 
 
 ```purescript
