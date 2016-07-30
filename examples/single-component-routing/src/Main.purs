@@ -1,6 +1,6 @@
 module Main where
 
-import Pux.Routing.Bob.Component as Pux.Routing.Bob.Component
+import Pux.Routing.Bob as Pux.Routing.Bob
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -11,7 +11,7 @@ import Pux (renderToDOM, start, noEffects, Update)
 import Pux.Html (br, div, a, text, li, ul, Html)
 import Pux.Html.Attributes (href, className)
 import Pux.Html.Events (onClick)
-import Pux.Routing.Bob.Component (link, RoutingAction(Routed, RoutingError), sampleUrl)
+import Pux.Routing.Bob (link, RoutingAction(Routed, RoutingError), sampleUrl')
 import Routing.Bob (router, Router)
 import Signal.Channel (CHANNEL)
 import Type.Proxy (Proxy(Proxy))
@@ -84,12 +84,12 @@ update _ (RoutingAction (Routed r)) state =
 update _ (RoutingAction (RoutingError _)) state = noEffects state
 -- pass other routing actions to router
 update router (RoutingAction a) state =
-  let r = Pux.Routing.Bob.Component.update router a state
+  let r = Pux.Routing.Bob router a state
   in  r { effects = (RoutingAction <$> _) <$> r.effects }
 
 main :: forall e. Eff (channel :: CHANNEL, console :: CONSOLE, dom :: DOM, err :: EXCEPTION | e) Unit
 main = do
-  sampleUrlSignal <- sampleUrl RoutingAction
+  sampleUrlSignal <- sampleUrl' RoutingAction
   let r = router (Proxy :: Proxy Route)
   case r of
     Just r' -> do

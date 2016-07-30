@@ -1,81 +1,77 @@
 module Pux.Routing.Bob.Component where
 
 import Prelude
-import Control.Monad.Aff (liftEff')
+import Pux.Routing.Bob as Pux.Routing.Bob
 import Control.Monad.Eff (Eff)
 import DOM (DOM)
+import Data.Bifunctor (class Bifunctor)
+import Data.Bifunctor.Clown (Clown(Clown), runClown)
 import Data.Generic (class Generic)
-import Data.Maybe (Maybe(Nothing, Just))
-import Data.String (dropWhile)
-import Pux (onlyEffects, noEffects, Update)
-import Pux.Html (Html, a)
-import Pux.Html.Attributes (href)
-import Pux.Html.Elements (Attribute)
-import Pux.Html.Events (onClick)
-import Pux.Router as Pux.Router
-import Pux.Routing.Bob (push)
-import Routing.Bob (toUrl, Router, fromUrl)
-import Signal (Signal, (~>))
+import Data.Identity (Identity(Identity), runIdentity)
+import Pux (EffModel)
+import Pux.Html (Attribute, Html)
+import Pux.Routing.Bob (RoutingAction)
+import Routing.Bob (Router)
+import Signal (Signal)
 
-type Path = String
+data Action route action
+  = RoutingAction (RoutingAction route)
+  | RawAction action
 
-data RoutingError r
-  = HistoryNotSupported r
-  | NotFound Path
+instance bifunctorAction :: Bifunctor Action where
+  bimap f _ (RoutingAction r) = RoutingAction (f <$> r)
+  bimap _ g (RawAction a) = RawAction (g a)
 
-instance functorRoutingError :: Functor RoutingError where
-  map f (HistoryNotSupported r) = HistoryNotSupported (f r)
-  map f (NotFound p) = NotFound p
+-- We need to call `toUrl router route` in views to produce links href values
+-- We want to change this value from parent component, as it should capture
+-- other parts of application url, so we have to postpone this evaluation
+-- and allow to map it's arguments
+-- I'm not sure if we can wrap this API in any nice abstraction...
+-- I've decided to pass callback which operates on Bifunctor b
+-- to allow whole action mapping and single route value mapping too.
+type View state route action =
+    forall route' action'. (Generic route') =>
+    Router route' ->
+    (forall b. (Bifunctor b) => b route action -> b route' action') ->
+    state ->
+    Html (Action route' action')
 
-data RoutingAction routesType
-  -- handled by library `update` function
-  = RouteRequest routesType
-  | UrlChanged Path
-  -- these should be handled by your `update` function
-  | Routed routesType
-  | RoutingError (RoutingError routesType)
+mapRoute :: forall action action' route route'.
+            (forall b. (Bifunctor b) => b route action -> b route' action') ->
+            route ->
+            route'
+mapRoute k = runIdentity <<< runClown <<< k <<< Clown <<< Identity
 
-instance functorRoutingActionWrapper :: Functor RoutingAction where
-  map f (RouteRequest r) = RouteRequest (f r)
-  map f (Routed r) = Routed (f r)
-  map f (RoutingError e) = RoutingError (map f e)
-  map _ (UrlChanged p) = (UrlChanged p)
-
-update :: forall eff route state. (Generic route) =>
-          Router route ->
-          Update state (RoutingAction route) (dom :: DOM | eff)
-update router (RouteRequest r) state =
-  let url = toUrl router r
-  in onlyEffects state [ liftEff' (push url) >>= (const $ pure (Routed r)) ]
-update router (UrlChanged p) state =
-  onlyEffects
-    state
-    [ case fromUrl router (dropWhile (_ == '/') p) of
-        Just r -> pure <<< Routed $ r
-        Nothing -> pure <<< RoutingError <<< NotFound $ p
-    ]
-update router _ state = noEffects state
-
-sampleUrl' :: forall route eff. Eff (dom :: DOM | eff) (Signal (RoutingAction route))
-sampleUrl' = Pux.Router.sampleUrl >>= (pure <<< (_ ~> UrlChanged))
-
-sampleUrl :: forall action route eff.
-             (RoutingAction route -> action) ->
-             Eff (dom :: DOM | eff) (Signal action)
-sampleUrl fromRoutingAction = do
-  s <- sampleUrl'
-  pure (s ~> fromRoutingAction)
 
 link :: forall action route. (Generic route) =>
         Router route ->
-        (RoutingAction route -> action) ->
         route ->
-        Array (Attribute action) ->
-        Array (Html action) ->
-        Html action
-link router fromRoutingAction route attrs children =
-  let url = toUrl router route
-      attrs' = [ href url
-               , onClick (const (fromRoutingAction <<< RouteRequest $ route))
-               ] <> attrs
-  in a attrs' children
+        Array (Attribute (Action route action)) ->
+        Array (Html (Action route action)) ->
+        Html (Action route action)
+link router route attrs children =
+  Pux.Routing.Bob.link router RoutingAction route attrs children
+
+link' :: forall action action' route route'. (Generic route') =>
+         (forall b. (Bifunctor b) => (b route action -> b route' action')) ->
+         Router route' ->
+         route ->
+         Array (Attribute (Action route' action')) ->
+         Array (Html (Action route' action')) ->
+         Html (Action route' action')
+link' mapAction router route =
+  link router (mapRoute mapAction route)
+
+
+update :: forall action eff route state. (Generic route) =>
+          Router route ->
+          (RoutingAction route) ->
+          state ->
+          EffModel state (Action route action) (dom :: DOM | eff)
+update router action state =
+  let r = Pux.Routing.Bob.update router action state
+  in  r { effects = (RoutingAction <$> _) <$> r.effects }
+
+
+sampleUrl :: forall action eff route. Eff ( dom :: DOM | eff ) (Signal (Action action route))
+sampleUrl = Pux.Routing.Bob.sampleUrl' RoutingAction
