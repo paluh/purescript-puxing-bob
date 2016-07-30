@@ -1,6 +1,5 @@
 module Main where
 
-import Pux.Routing.Bob as Pux.Routing.Bob
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -16,15 +15,14 @@ import Routing.Bob (router, Router)
 import Signal.Channel (CHANNEL)
 import Type.Proxy (Proxy(Proxy))
 import Prelude hiding (div)
+import Pux.Routing.Bob as Pux.Routing.Bob
 
 data Route
   = Profile
   | Inbox
   | Settings
 derive instance genericRoute :: Generic Route
-
-instance routeEq :: Eq Route where
-  eq = gEq
+derive instance eqRoute :: Eq Route
 
 type State =
   { activeTab :: Route
@@ -84,7 +82,7 @@ update _ (RoutingAction (Routed r)) state =
 update _ (RoutingAction (RoutingError _)) state = noEffects state
 -- pass other routing actions to router
 update router (RoutingAction a) state =
-  let r = Pux.Routing.Bob router a state
+  let r = Pux.Routing.Bob.update router a state
   in  r { effects = (RoutingAction <$> _) <$> r.effects }
 
 main :: forall e. Eff (channel :: CHANNEL, console :: CONSOLE, dom :: DOM, err :: EXCEPTION | e) Unit

@@ -161,3 +161,65 @@ update router (RoutingAction (RoutingError e)) = ...
 update router (RoutingAction a) = Pux.Routing.Bob.update router a
 
 ```
+
+## Pux.Routing.Bob.Component
+
+This module implements basic approach to composable component implementation. It is still just proof of concept.
+
+### Overview
+
+#### Action type
+
+There is `Action` type provided which is based on `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding type and one for normal action. It seems that regular actions composition is done through sum of subcomponents actions, but composition of routes is just a product. `Action` type, thanks to clear separation between these two types, allows to separate these composition.
+Mapping over `Action` is still possible thanks to `Bifunctor` instance.
+
+```purescript
+
+import Pux.Routing.Bob (RoutingAction)
+
+data Action route action
+  = RoutingAction (RoutingAction route)
+  | RawAction action
+
+```
+
+I think that the worst part of this `API` is `View` type. It is a bit complicated and completly removes possiblity to work with `Html action` through it's `Functor` instance.
+
+
+```purescript
+
+type View state route action =
+    forall route' action'. (Generic route') =>
+    Router route' ->
+    (forall b. (Bifunctor b) => b route action -> b route' action') ->
+    state ->
+    Html (Action route' action')
+
+```
+
+Here is why we need such a complicated `View` type:
+
+* we want to perform `toUrl router route` (for example when generating `href` values)
+
+* this value has to somehow capture external (parent component) routing context, because final url should contain other components routes
+
+* I don't think we can pospone this evaluation in any other way than through callback, but maybe there is some nice abstraction...
+
+* this callback should be used in place of `Functor`'s `map` and should operate on any `Bifunctor`
+
+So final component view could look like this:
+
+``` purescript
+import Pux.Routing.Bob.Component (View, link')
+
+componentView :: View ComponentState ComponentRoute ComponentAction
+componentView router mapAction state =
+  div []
+    -- link which causes route change
+    [ link' router mapAction SomeRoute [] [ text "route ]
+    -- link which raises action
+    , a [ href "#", onClick $ const (mapAction ClickAction)] [ text "action" ]
+    ]
+```
+
+From parent component we can use this subview with `bimap` over route and action type - please check `appView` from 'examples/multiple-components/src/Main.purs'.

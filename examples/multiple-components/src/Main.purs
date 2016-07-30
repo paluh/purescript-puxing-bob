@@ -195,7 +195,7 @@ appView router state =
   mapMainWindowAction :: forall b. (Bifunctor b) =>
                          b MainWindowRoute MainWindowRawAction ->
                          b AppRoute AppRawAction
-  mapMainWindowAction = bimap mapMainWindowRoute MainWindowRawAction
+  mapMainWindowAction = bimap (\r -> AppRoute r state.sideBarState) MainWindowRawAction
 
   mapSideBarRoute sideBarRoute = AppRoute state.mainWindowState.activeTab sideBarRoute
   mapSideBarAction :: forall b. (Bifunctor b) =>

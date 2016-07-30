@@ -62,7 +62,8 @@ link' :: forall action action' route route'. (Generic route') =>
 link' mapAction router route =
   link router (mapRoute mapAction route)
 
-
+-- | Helper which wrapps result of router `update` function
+-- | into `Action` constructor
 update :: forall action eff route state. (Generic route) =>
           Router route ->
           (RoutingAction route) ->
@@ -72,6 +73,6 @@ update router action state =
   let r = Pux.Routing.Bob.update router action state
   in  r { effects = (RoutingAction <$> _) <$> r.effects }
 
-
+-- | Ready to use signal which should be added to your app config `inputs`
 sampleUrl :: forall action eff route. Eff ( dom :: DOM | eff ) (Signal (Action action route))
 sampleUrl = Pux.Routing.Bob.sampleUrl' RoutingAction
