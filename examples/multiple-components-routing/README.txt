@@ -1,17 +1,18 @@
 BUILD:
 
-./build.sh
+Just:
 
-or by hand:
+    $ ./build.sh
 
-bower update
-pulp build --to output/bundle.js
+or:
+
+    $ bower update
+    $ pulp build --to output/bundle.js
+
 
 RUN:
 
-Serve index.html somehow...
+Serve index.html somehow... I prefer:
 
-I prefer:
-
-npm install webpack-dev-server
-webpack-dev-server --history-api-fallback
+    $ npm install webpack-dev-server
+    $ webpack-dev-server --history-api-fallback

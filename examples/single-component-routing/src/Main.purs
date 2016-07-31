@@ -1,21 +1,21 @@
 module Main where
 
+import Pux.Routing.Bob as Pux.Routing.Bob
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import DOM (DOM)
-import Data.Generic (gEq, class Generic)
+import Data.Generic (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
 import Pux (renderToDOM, start, noEffects, Update)
 import Pux.Html (br, div, a, text, li, ul, Html)
 import Pux.Html.Attributes (href, className)
 import Pux.Html.Events (onClick)
-import Pux.Routing.Bob (link, RoutingAction(Routed, RoutingError), sampleUrl')
+import Pux.Routing.Bob (setInitialRoute, link, RoutingAction(Routed, RoutingError), sampleUrl')
 import Routing.Bob (router, Router)
 import Signal.Channel (CHANNEL)
 import Type.Proxy (Proxy(Proxy))
 import Prelude hiding (div)
-import Pux.Routing.Bob as Pux.Routing.Bob
 
 data Route
   = Profile
@@ -91,13 +91,14 @@ main = do
   let r = router (Proxy :: Proxy Route)
   case r of
     Just r' -> do
+      currRoute <- setInitialRoute r' Profile
       let
         config =
           { update: update r'
           , view: view r'
           , inputs: [ sampleUrlSignal ]
           , initialState:
-              { activeTab: Profile
+              { activeTab: currRoute
               , profileCounter: 0
               , inboxCounter: 0
               , settingsCounter: 0
