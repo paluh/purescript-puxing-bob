@@ -4,11 +4,11 @@ Bidiractional routing for Pux based on boomerangs and generics. I'm exploring de
 
 ## Caution!
 
-This library is still proof of concept and is in testing phase...
+This library is still just a proof of concept and is in testing phase...
 
 ## Bidirectional routing
 
-Bidirectional routing allows you to easily encode and decode urls to and from types. All modules in this library are currently based on [purescript-routing-bob](https://github.com/paluh/purescript-routing-bob). Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
+Bidirectional routing allows you to generate urls encoders and decoders from types. All modules in this library are currently based on [purescript-routing-bob](https://github.com/paluh/purescript-routing-bob). Parsers and serializers are generated from data types which are instances of `class Generic` (which can be derived autmagically in PureScript :-)).
 Here is routing API which is base for this library:
 
 ```purescript
@@ -91,8 +91,7 @@ data Action
 
 ```
 
-
-You have to prepare router and pass it somehow to `view` and to this component `update` function (it such a simple scenario you can preserve it in a closure).  You also have to include signal (which will monitor direct url changes) into application configuration `inputs` list:
+You have to prepare router and pass it somehow to `view` and to this component `update` function (or you can [cheat](#cheating), a bit ;-)).  You also have to include signal (which will monitor direct url changes) into application configuration `inputs` list:
 
 ```purescript
 
@@ -163,11 +162,11 @@ update router (RoutingAction a) = Pux.Routing.Bob.update router a
 
 ## Pux.Routing.Bob.Component
 
-This module implements basic approach to composable component implementation. It is still just proof of concept. You can find full and working code of routing composition here: [examples/multiple-components-routing](https://github.com/paluh/purescript-puxing-bob/tree/master/examples/multiple-components-routing).
+This module implements basic approach to composable component implementation. It is still just a proof of concept. You can find full and working example implementation of routing composition here: [examples/multiple-components-routing](https://github.com/paluh/purescript-puxing-bob/tree/master/examples/multiple-components-routing).
 
 ### Action type
 
-There is an `Action` type provided which is based on `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding and one for "normal" action. It seems that "regular" actions composition is done through sum of subcomponents actions, but composition of routes is a product of subroutes. The `Action` type, thanks to it's clear separation between `route` and `action`, facilitates usage of these two strategies of composition.
+There is `Action` type provided which is based on the `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding and one for "normal" action. It seems that "regular" actions composition is done through sum of subcomponents actions, but composition of routes is a product of subroutes. The `Action` type, thanks to it's clear separation between `route` and `action`, facilitates usage of these two strategies of composition.
 It is possible to `map` over an `Action` value, because `Action` is `Bifunctor` instance, so you can turn `Action subcomponentRoute subcomponentRawAction` into `Action appRoute appRawAction`.
 
 ```purescript
@@ -202,7 +201,7 @@ Here is why we need such a complicated `View` type:
 
 * this value has to somehow capture external (parent component) routing context, because final url should contain other components routes,
 
-* I don't think we can pospone this evaluation in any other way than through callback, but maybe there is some nice abstraction...
+* I don't think we can pospone this evaluation in any other way than through callback (maybe there is some nice abstraction??? - we need to map over bare `Route`, when generating `href` values, and and over `Action Route RawAction` values)
 
 * this callback should be used in place of `Functor`'s `map` and should operate on any `Bifunctor`
 
@@ -222,3 +221,23 @@ componentView router mapAction state =
 ```
 
 From parent component we can use this subview with `bimap` over route and action type - please check `appView` from 'examples/multiple-components/src/Main.purs'.
+
+### Cheating
+
+I've found that a bit of cheating can simplify subcomponents API and integration a lot. By cheating I mean usage of `unsafePartial` in places where routers are generated:
+
+``` purescript
+
+import Data.Maybe (Maybe(Just))
+import Partial.Unsafe (unsafePartial)
+import Routing.Bob (router, Router)
+import Type.Proxy (Proxy(Proxy))
+
+componentRouter :: Router MyRouteType
+componentRouter = unsafePartial (case (router (Proxy :: Proxy MyRouteType)) of Just r -> r)
+
+```
+
+As `MyRouteType` is not going to change during application lifetime (and it should be tested before production build anyway ;-)), it is "safe" to use this pattern to simplify subcomponents API and drop router parameter from your `update` functions.
+
+As a side note, I want to say that it's hard to imagine that `Maybe` would disapear from `Routing.Bob.router` constructor result, as it is hard to think about sane, default, url encodings of all PureScript data types (for example I'm not sure, how should look url for this type: `[ { field :: Int, ... } ]`).
