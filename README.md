@@ -167,8 +167,8 @@ This module implements basic approach to composable component implementation. It
 
 ### Action type
 
-There is `Action` type provided which is based on `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding type and one for "normal" action. It seems that regular actions composition is done through sum of subcomponents actions, but composition of routes is a product of subroutes. `Action` type, thanks to clear separation between these two types, facilitates these two strategies of composition.
-Mapping over `Action` is still possible thanks to `Bifunctor` instance.
+There is an `Action` type provided which is based on `RoutingAction` from base library module. This action type is parametrized by two type variables - one for route encoding and one for "normal" action. It seems that "regular" actions composition is done through sum of subcomponents actions, but composition of routes is a product of subroutes. The `Action` type, thanks to it's clear separation between `route` and `action`, facilitates usage of these two strategies of composition.
+It is possible to `map` over an `Action` value, because `Action` is `Bifunctor` instance, so you can turn `Action subcomponentRoute subcomponentRawAction` into `Action appRoute appRawAction`.
 
 ```purescript
 
