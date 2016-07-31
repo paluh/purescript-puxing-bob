@@ -2,11 +2,16 @@ BUILD:
 
 ./build.sh
 
-or:
+or by hand:
 
 bower update
 pulp build --to output/bundle.js
 
 RUN:
 
-Serve `index.html` somehow (could be `python3 -m http.server 4008`).
+Serve index.html somehow...
+
+I prefer:
+
+npm install webpack-dev-server
+webpack-dev-server --history-api-fallback
