@@ -215,9 +215,9 @@ componentView :: View ComponentState ComponentRoute ComponentAction
 componentView router mapAction state =
   div []
     -- link which causes route change
-    [ link' router mapAction SomeRoute [] [ text "route ]
+    [ link' router mapAction SomeRoute [] [ text "route" ]
     -- link which raises action
-    , a [ href "#", onClick $ const (mapAction ClickAction)] [ text "action" ]
+    , a [ href "#", onClick $ const (mapAction (RawAction ClickAction))] [ text "action" ]
     ]
 ```
 
