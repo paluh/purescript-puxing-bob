@@ -239,5 +239,3 @@ componentRouter = unsafePartial (case (router (Proxy :: Proxy MyRouteType)) of J
 ```
 
 As `MyRouteType` is not going to change during application lifetime (and it should be tested before production build anyway ;-)), it is "safe" to use this pattern to simplify subcomponents API and drop router parameter from your `update` functions.
-
-As a side note, I want to say that it's hard to imagine that `Maybe` would disapear from `Routing.Bob.router` constructor result, as it is hard to think about sane, default, url encodings of all PureScript data types (for example I'm not sure, how should look url for this type: `[ { field :: Int, ... } ]`).
