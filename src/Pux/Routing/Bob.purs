@@ -18,7 +18,6 @@ import Pux.Html.Attributes (href)
 import Pux.Html.Elements (Attribute)
 import Pux.Html.Events (onClick)
 import Pux.Router (navigateTo)
-import Pux.Routing.Bob (push)
 import Routing.Bob (Router, fromUrl)
 import Signal (Signal, (~>))
 
@@ -95,6 +94,18 @@ link router fromRoutingAction route attrs children =
                ] <> attrs
   in a attrs' children
 
+-- | Tries to parse current `window.location` value and if it is correct
+-- | just return parsed route value. In other case setup url with default route.
+-- | Returns value which is finally used.
+setInitialRoute :: forall eff route. Router route -> route -> Eff (dom :: DOM | eff) route
+setInitialRoute router defaultRoute = do
+  maybeCurrRoute <- parseWindowLocation router
+  case maybeCurrRoute of
+    Just cr -> pure cr
+    Nothing ->
+      do
+        pushRoute router defaultRoute
+        pure defaultRoute
 
 -- | push* and navigateTo* functions should be used only when initializing
 -- | application. In other situations you should request url change through

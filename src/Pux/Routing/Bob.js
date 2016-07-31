@@ -4,5 +4,7 @@
 // module Pux.Routing.Bob
 
 exports.push = function(url) {
-  window.history.pushState({}, document.title, url);
+  return function() {
+    window.history.pushState({}, document.title, url);
+  }
 };
