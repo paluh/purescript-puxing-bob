@@ -220,7 +220,7 @@ componentView router mapAction state =
     ]
 ```
 
-From parent component we can use this subview with `bimap` over route and action type - please check `appView` from 'examples/multiple-components/src/Main.purs'.
+From parent component we can use this subview with `bimap` over route and action type - please check `appView` from [examples/multiple-components/src/Main.purs](https://github.com/paluh/purescript-puxing-bob/tree/master/examples/multiple-components-routing/src/Main.purs).
 
 ### Cheating
 
