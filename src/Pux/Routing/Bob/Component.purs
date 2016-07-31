@@ -22,13 +22,18 @@ instance bifunctorAction :: Bifunctor Action where
   bimap f _ (RoutingAction r) = RoutingAction (f <$> r)
   bimap _ g (RawAction a) = RawAction (g a)
 
--- We need to call `toUrl router route` in views to produce links href values
--- We want to change this value from parent component, as it should capture
--- other parts of application url, so we have to postpone this evaluation
--- and allow to map it's arguments
--- I'm not sure if we can wrap this API in any nice abstraction...
--- I've decided to pass callback which operates on Bifunctor b
--- to allow whole action mapping and single route value mapping too.
+-- | I know that this type is a bit complicated. Here is why:
+-- |
+-- | * we need to call `toAbsoluteUrl router route` in views to produce links href values,
+-- |
+-- | * we want to change this value from parent component, as it should capture
+-- |   other parts of application url
+-- |
+-- | * we have to postpone this evaluation and allow to map it's arguments
+-- |
+-- | I've decided to add callback argument which operates on `Bifunctor b`
+-- | to allow whole action (`Action route action`) mapping and single
+-- | `route` value mapping too inside `view`.
 type View state route action =
     forall route' action'. (Generic route') =>
     Router route' ->
@@ -36,12 +41,13 @@ type View state route action =
     state ->
     Html (Action route' action')
 
+-- | Little helper which allows mapping over naked `route` value
+-- | with function over `(Bifunctor b) => b route action`.
 mapRoute :: forall action action' route route'.
             (forall b. (Bifunctor b) => b route action -> b route' action') ->
             route ->
             route'
 mapRoute k = runIdentity <<< runClown <<< k <<< Clown <<< Identity
-
 
 link :: forall action route. (Generic route) =>
         Router route ->
@@ -62,8 +68,9 @@ link' :: forall action action' route route'. (Generic route') =>
 link' mapAction router route =
   link router (mapRoute mapAction route)
 
--- | Helper which wrapps result of router `update` function
--- | into `Action` constructor
+-- | Shortcut which wraps result of base `update` function
+-- | (which operates on `Pux.Routing.Bob.RoutingAction r` values)
+-- | into final `Action r a` value.
 update :: forall action eff route state. (Generic route) =>
           Router route ->
           (RoutingAction route) ->

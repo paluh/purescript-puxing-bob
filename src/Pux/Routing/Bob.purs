@@ -1,9 +1,14 @@
 module Pux.Routing.Bob where
 
 import Prelude
+import Pux.Router as Pux.Router
+import Routing.Bob as Routing.Bob
 import Control.Monad.Aff (liftEff')
 import Control.Monad.Eff (Eff)
 import DOM (DOM)
+import DOM.HTML (window)
+import DOM.HTML.Location (pathname)
+import DOM.HTML.Window (location)
 import Data.Generic (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.String (dropWhile)
@@ -12,29 +17,33 @@ import Pux.Html (Html, a)
 import Pux.Html.Attributes (href)
 import Pux.Html.Elements (Attribute)
 import Pux.Html.Events (onClick)
-import Pux.Router as Pux.Router
+import Pux.Router (navigateTo)
 import Pux.Routing.Bob (push)
-import Routing.Bob as Routing.Bob
 import Routing.Bob (Router, fromUrl)
 import Signal (Signal, (~>))
-
-foreign import push :: forall eff. String -> Eff (dom :: DOM | eff) Unit
 
 type Path = String
 
 data RoutingError r
-  = HistoryNotSupported r
-  | NotFound Path
+  = NotFound Path
 
 instance functorRoutingError :: Functor RoutingError where
-  map f (HistoryNotSupported r) = HistoryNotSupported (f r)
   map f (NotFound p) = NotFound p
 
+-- | Base routing action type:
+-- | - `RouteRequest r` - should be used to request url change
+-- |    and should be passed to library `update` function.
+-- | - `UrlChange s` is raised when browser location changes
+-- |    should be passed to library `update` function too.
+-- | - `Routed r` - is an response type which indicates route
+-- |    change and should be handled in your application `update`
+-- | - `RoutingError ...` - is error response action which
+-- |    should be handled in your `update` too.
 data RoutingAction routesType
-  -- handled by library `update` function
+  -- | handled by library `update` function
   = RouteRequest routesType
   | UrlChanged Path
-  -- these should be handled by your `update` function
+  -- | handled by your `update` function
   | Routed routesType
   | RoutingError (RoutingError routesType)
 
@@ -44,14 +53,14 @@ instance functorRoutingActionWrapper :: Functor RoutingAction where
   map f (RoutingError e) = RoutingError (map f e)
   map _ (UrlChanged p) = (UrlChanged p)
 
-toUrl :: forall route. Router route -> route -> String
-toUrl = (("/" <> _) <$> _) <$> Routing.Bob.toUrl
+toAbsoluteUrl :: forall route. Router route -> route -> String
+toAbsoluteUrl = (("/" <> _) <$> _) <$> Routing.Bob.toUrl
 
 update :: forall eff route state. (Generic route) =>
           Router route ->
           Update state (RoutingAction route) (dom :: DOM | eff)
 update router (RouteRequest r) state =
-  let url = toUrl router r
+  let url = toAbsoluteUrl router r
   in onlyEffects state [ liftEff' (push url) >>= (const $ pure (Routed r)) ]
 update router (UrlChanged p) state =
   onlyEffects
@@ -80,8 +89,37 @@ link :: forall action route. (Generic route) =>
         Array (Html action) ->
         Html action
 link router fromRoutingAction route attrs children =
-  let url = toUrl router route
+  let url = toAbsoluteUrl router route
       attrs' = [ href url
                , onClick (const (fromRoutingAction <<< RouteRequest $ route))
                ] <> attrs
   in a attrs' children
+
+
+-- | push* and navigateTo* functions should be used only when initializing
+-- | application. In other situations you should request url change through
+-- | `RequestRoute r` action.
+
+-- | Pushes history state (changes location) without signaling this event.
+foreign import push :: forall eff. String -> Eff (dom :: DOM | eff) Unit
+
+-- | Pushes route (changes location) without signaling this event.
+pushRoute :: forall eff route.
+              Router route ->
+              route ->
+              Eff (dom :: DOM | eff) Unit
+pushRoute router route = push (toAbsoluteUrl router route)
+
+-- | Pushes history state (changes location) signaling this event.
+navigateToRoute :: forall eff route.
+                    Router route ->
+                    route ->
+                    Eff (dom :: DOM | eff) Unit
+navigateToRoute router route = navigateTo (toAbsoluteUrl router route)
+
+-- | Tries to parse current window.location.pathname.
+parseWindowLocation :: forall eff route.
+                        Router route ->
+                        Eff (dom :: DOM | eff) (Maybe route)
+parseWindowLocation router =
+  window >>= location >>= pathname >>= (pure <<< fromUrl router)
