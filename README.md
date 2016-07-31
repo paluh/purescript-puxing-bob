@@ -17,7 +17,7 @@ router :: forall a. (Generic a) => Proxy a -> Maybe (Router a)
 
 toUrl :: forall a. Router a -> a -> String
 
-fromUrl :: forall a. Router a -> String -> Maybe String
+fromUrl :: forall a. Router a -> String -> Maybe a
 
 ```
 
