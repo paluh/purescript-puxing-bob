@@ -18,7 +18,7 @@ import Pux.Html.Attributes (href)
 import Pux.Html.Elements (Attribute)
 import Pux.Html.Events (onClick)
 import Pux.Router (navigateTo)
-import Routing.Bob (Router, fromUrl)
+import Routing.Bob (fromUrl, Router)
 import Signal (Signal, (~>))
 
 type Path = String
@@ -55,6 +55,9 @@ instance functorRoutingActionWrapper :: Functor RoutingAction where
 toAbsoluteUrl :: forall route. Router route -> route -> String
 toAbsoluteUrl = (("/" <> _) <$> _) <$> Routing.Bob.toUrl
 
+fromAbsoluteUrl :: forall route. Router route -> String -> Maybe route
+fromAbsoluteUrl r =  fromUrl r <<< dropWhile (_ == '/')
+
 update :: forall eff route state. (Generic route) =>
           Router route ->
           Update state (RoutingAction route) (dom :: DOM | eff)
@@ -64,7 +67,7 @@ update router (RouteRequest r) state =
 update router (UrlChanged p) state =
   onlyEffects
     state
-    [ case fromUrl router (dropWhile (_ == '/') p) of
+    [ case fromAbsoluteUrl router p of
         Just r -> pure <<< Routed $ r
         Nothing -> pure <<< RoutingError <<< NotFound $ p
     ]
@@ -95,8 +98,9 @@ link router fromRoutingAction route attrs children =
   in a attrs' children
 
 -- | Tries to parse current `window.location` value and if it is correct
--- | just return parsed route value. In other case setup url with default route.
--- | Returns value which is finally used.
+-- | just returns parsed route value. In other case pushes `defaultRoute`
+-- | onto history stack.
+-- | Returns route which has been initialized.
 setInitialRoute :: forall eff route. Router route -> route -> Eff (dom :: DOM | eff) route
 setInitialRoute router defaultRoute = do
   maybeCurrRoute <- parseWindowLocation router
@@ -133,4 +137,4 @@ parseWindowLocation :: forall eff route.
                         Router route ->
                         Eff (dom :: DOM | eff) (Maybe route)
 parseWindowLocation router =
-  window >>= location >>= pathname >>= (pure <<< fromUrl router)
+  window >>= location >>= pathname >>= (pure <<< fromAbsoluteUrl router)
