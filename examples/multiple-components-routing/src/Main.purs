@@ -114,8 +114,8 @@ sideBarRouter =
 
 sideBarUpdate :: forall eff. Update SideBarState SideBarAction (dom :: DOM | eff)
 sideBarUpdate (RawAction _) state = noEffects state
-sideBarUpdate (RoutingAction (Routed r)) state | r == Expanded = noEffects Expanded
-                                               | r == Minimized = noEffects Minimized
+-- current state is just given route, because State = SideBarRoute ;-)
+sideBarUpdate (RoutingAction (Routed r)) _ = noEffects r
 sideBarUpdate (RoutingAction (RoutingError _)) state = noEffects state
 sideBarUpdate (RoutingAction a) state =
   Pux.Routing.Bob.Component.update sideBarRouter a state
