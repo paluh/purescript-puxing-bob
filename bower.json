@@ -11,7 +11,7 @@
     "purescript-console": "^1.0.0",
     "purescript-const": "^1.0.0",
     "purescript-pux": "5.0.1",
-    "purescript-routing-bob": "^0.1.1"
+    "purescript-routing-bob": "^0.2.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^1.0.0"
