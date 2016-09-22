@@ -3,12 +3,15 @@ module Pux.Routing.Bob where
 import Prelude
 import Pux.Router as Pux.Router
 import Routing.Bob as Routing.Bob
-import Control.Monad.Aff (liftEff')
+import Control.Monad.Aff (Aff, liftEff')
+import Control.Monad.Aff.Unsafe (unsafeInterleaveAff)
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Exception (Error)
 import DOM (DOM)
 import DOM.HTML (window)
 import DOM.HTML.Location (pathname)
 import DOM.HTML.Window (location)
+import Data.Either (Either)
 import Data.Generic (class Generic)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.String (dropWhile)
@@ -58,12 +61,16 @@ toAbsoluteUrl = (("/" <> _) <$> _) <$> Routing.Bob.toUrl
 fromAbsoluteUrl :: forall route. Router route -> String -> Maybe route
 fromAbsoluteUrl r =  fromUrl r <<< dropWhile (_ == '/')
 
+-- I'm not sure if this is really safe workaroud for double "err" label problem
+push' :: forall eff. String -> Aff (dom :: DOM | eff) (Either Error Unit)
+push' url = unsafeInterleaveAff (liftEff' (push url))
+
 update :: forall eff route state. (Generic route) =>
           Router route ->
           Update state (RoutingAction route) (dom :: DOM | eff)
 update router (RouteRequest r) state =
   let url = toAbsoluteUrl router r
-  in onlyEffects state [ liftEff' (push url) >>= (const $ pure (Routed r)) ]
+  in onlyEffects state [ push' url >>= (const $ pure (Routed r)) ]
 update router (UrlChanged p) state =
   onlyEffects
     state

@@ -10,7 +10,7 @@
     "purescript-bifunctors": "^1.0.0",
     "purescript-console": "^1.0.0",
     "purescript-const": "^1.0.0",
-    "purescript-pux": "5.0.3",
+    "purescript-pux": "^5.0.3",
     "purescript-routing-bob": "^0.3.0"
   },
   "devDependencies": {
