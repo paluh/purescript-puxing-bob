@@ -10,13 +10,20 @@ import Data.Generic (class Generic)
 import Data.Identity (Identity(Identity), runIdentity)
 import Pux (EffModel)
 import Pux.Html (Attribute, Html)
-import Pux.Routing.Bob (RoutingAction)
+import Pux.Routing.Bob (RoutingAction(RouteRequest))
 import Routing.Bob (Router)
 import Signal (Signal)
 
 data Action route action
   = RoutingAction (RoutingAction route)
   | RawAction action
+
+-- shortcuts for views
+routeRequest :: forall route action. route -> Action route action
+routeRequest = RoutingAction <<< RouteRequest
+
+action :: forall route action. action -> Action route action
+action = RawAction
 
 instance bifunctorAction :: Bifunctor Action where
   bimap f _ (RoutingAction r) = RoutingAction (f <$> r)
@@ -76,8 +83,8 @@ update :: forall action eff route state. (Generic route) =>
           (RoutingAction route) ->
           state ->
           EffModel state (Action route action) (dom :: DOM | eff)
-update router action state =
-  let r = Pux.Routing.Bob.update router action state
+update router action' state =
+  let r = Pux.Routing.Bob.update router action' state
   in  r { effects = (RoutingAction <$> _) <$> r.effects }
 
 -- | Ready to use signal which should be added to your app config `inputs`
