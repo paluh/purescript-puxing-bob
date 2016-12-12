@@ -7,14 +7,14 @@
     "output"
   ],
   "dependencies": {
-    "purescript-bifunctors": "^1.0.0",
-    "purescript-console": "^1.0.0",
-    "purescript-const": "^1.0.0",
-    "purescript-pux": "^5.0.3",
-    "purescript-routing-bob": "^0.3.0"
+    "purescript-bifunctors": "^2.0.0",
+    "purescript-console": "^2.0.0",
+    "purescript-const": "^2.0.0",
+    "purescript-pux": "^7.0.0",
+    "purescript-routing-bob": "^0.4.2"
   },
   "devDependencies": {
-    "purescript-psci-support": "^1.0.0"
+    "purescript-psci-support": "^2.0.0"
   },
   "version": "0.0.2"
 }

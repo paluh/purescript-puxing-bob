@@ -4,7 +4,7 @@ import Prelude
 import Pux.Router as Pux.Router
 import Routing.Bob as Routing.Bob
 import Control.Monad.Aff (Aff, liftEff')
-import Control.Monad.Aff.Unsafe (unsafeInterleaveAff)
+-- import Control.Monad.Aff.Unsafe (unsafeInterleaveAff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Exception (Error)
 import DOM (DOM)
@@ -63,7 +63,7 @@ fromAbsoluteUrl r =  fromUrl r <<< dropWhile (_ == '/')
 
 -- I'm not sure if this is really safe workaroud for double "err" label problem
 push' :: forall eff. String -> Aff (dom :: DOM | eff) (Either Error Unit)
-push' url = unsafeInterleaveAff (liftEff' (push url))
+push' url = liftEff' (push url)
 
 update :: forall eff route state. (Generic route) =>
           Router route ->

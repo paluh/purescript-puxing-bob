@@ -5,9 +5,10 @@ import Pux.Routing.Bob as Pux.Routing.Bob
 import Control.Monad.Eff (Eff)
 import DOM (DOM)
 import Data.Bifunctor (class Bifunctor)
-import Data.Bifunctor.Clown (Clown(Clown), runClown)
+import Data.Bifunctor.Clown (Clown(Clown))
 import Data.Generic (class Generic)
-import Data.Identity (Identity(Identity), runIdentity)
+import Data.Identity (Identity(Identity))
+import Data.Newtype (unwrap)
 import Pux (EffModel)
 import Pux.Html (Attribute, Html)
 import Pux.Routing.Bob (RoutingAction(RouteRequest))
@@ -54,7 +55,7 @@ mapRoute :: forall action action' route route'.
             (forall b. (Bifunctor b) => b route action -> b route' action') ->
             route ->
             route'
-mapRoute k = runIdentity <<< runClown <<< k <<< Clown <<< Identity
+mapRoute k = unwrap <<< unwrap <<< k <<< Clown <<< Identity
 
 link :: forall action route. (Generic route) =>
         Router route ->
